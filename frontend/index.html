@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEXSUS SERVER — Control Panel</title>
+<style>
+:root{--bg:#090b12;--panel:#101521;--panel2:#141b29;--line:#273044;--muted:#8792a8;--white:#edf2ff;--cyan:#35d9ef;--purple:#a78bfa;--green:#35d49a;--orange:#f6a64a;--red:#fb7185}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--white);font-family:Inter,Arial,sans-serif;font-size:14px}
+button,input{font:inherit}
+.app{display:flex;min-height:100vh}
+.sidebar{width:225px;background:#0d111c;border-right:1px solid #20283a;padding:22px 14px;flex-shrink:0;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 9px 30px;font-size:19px;font-weight:800;letter-spacing:.5px}
+.brandmark{width:29px;height:29px;border:2px solid var(--purple);border-radius:9px;display:grid;place-items:center;color:var(--cyan);font-size:17px}
+.group{color:#68758e;font-size:10px;font-weight:800;letter-spacing:1.5px;padding:15px 11px 7px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:3px 0;color:#9ba8bf;text-decoration:none;border-radius:8px;font-size:13px;transition:.2s}
+.nav a:hover,.nav a.active{background:#1b2440;color:#fff}
+.nav a.active{box-shadow:inset 2px 0 var(--purple)}
+.ico{width:18px;text-align:center;color:#91a4c4}
+.sidebar-bottom{margin-top:auto;border:1px solid #21473e;background:#10241f;border-radius:10px;padding:13px}
+.sidebar-bottom strong{color:var(--green);font-size:12px}
+.sidebar-bottom p{font-size:11px;color:#93a99f;margin:7px 0 0}
+.main{flex:1;min-width:0;padding:24px 29px;max-width:1700px;margin:0 auto;width:100%}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:28px}
+.search{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--muted);width:min(360px,45%)}
+.topright{display:flex;align-items:center;gap:16px;color:#9ba8bf}
+.admin{background:#30234f;color:#c8b6ff;border-radius:8px;padding:9px 12px}
+.heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}
+h1{font-size:25px;margin:0 0 7px}
+.subtitle{color:var(--muted);font-size:12px}
+.online{color:var(--green);font-size:12px}
+.refresh{border:1px solid #5140a0;background:#30246a;color:#fff;border-radius:8px;padding:10px 15px;cursor:pointer}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.panel{background:linear-gradient(145deg,#131a29,#101521);border:1px solid var(--line);border-radius:11px;padding:17px;min-width:0}
+.metric{position:relative;overflow:hidden}
+.metric:before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+.metric-label{display:flex;justify-content:space-between;color:#a0acc1;font-size:11px;font-weight:700;letter-spacing:.7px}
+.metric-icon{color:var(--accent);font-size:16px}
+.metric-value{font-size:29px;font-weight:750;margin:14px 0 10px;letter-spacing:-1px}
+.metric-value small{font-size:12px;color:#aab5c8;letter-spacing:0}
+.track{height:5px;background:#252e40;border-radius:10px;overflow:hidden}
+.track span{display:block;height:100%;width:0;background:var(--accent);border-radius:10px;transition:width .4s}
+.metric-foot{font-size:10px;color:#7f8ba2;margin-top:9px}
+.middle{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(260px,1fr);gap:15px;margin-top:17px}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+.panel-head h2{font-size:14px;margin:0}
+.panel-head span{font-size:10px;color:var(--muted)}
+.chart-wrap{height:225px;position:relative}
+canvas{width:100%;height:100%;display:block}
+.legend{display:flex;gap:18px;color:#a0acc1;font-size:10px;margin-top:9px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+.service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+.service{background:#111927;border:1px solid #263247;border-radius:9px;padding:15px}
+.service-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.service-name{font-weight:700;font-size:12px}
+.state{font-size:10px;color:var(--muted)}
+.state.ok{color:var(--green)}
+.state.off{color:var(--orange)}
+.service p{color:#8491a9;font-size:11px;margin:12px 0 0}
+.bottom-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:15px;margin-top:17px}
+.info-list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.info-item small{display:block;color:var(--muted);font-size:10px;margin-bottom:5px}
+.info-item strong{font-size:12px;overflow-wrap:anywhere}
+.health-number{font-size:25px;font-weight:750;color:var(--green);margin:15px 0 5px}
+.health-note{font-size:11px;color:var(--muted)}
+.footer{color:#637089;font-size:10px;text-align:center;padding:25px 0 8px}
+@media(max-width:1050px){.metrics{grid-template-columns:repeat(2,1fr)}.service-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.sidebar{width:65px;padding:16px 7px}.brand{padding:5px 9px 25px}.brand span:last-child,.nav a span:last-child,.group,.sidebar-bottom{display:none}.nav a{justify-content:center;padding:13px 5px}.main{padding:17px}.middle,.bottom-grid{grid-template-columns:1fr}.search{width:50%}}
+@media(max-width:480px){.metrics{grid-template-columns:1fr 1fr;gap:9px}.metric-value{font-size:22px}.service-grid{grid-template-columns:1fr 1fr}.main{padding:12px}.heading{align-items:flex-start}.topright{gap:7px}.search{font-size:11px}.chart-wrap{height:180px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+ <div class="brand"><span class="brandmark">L</span><span>LEXSUS<span style="color:var(--purple)">.</span></span></div>
+ <div class="group">OVERVIEW</div>
+ <nav class="nav">
+  <a class="active" href="#dashboard"><span class="ico">▦</span><span>Dashboard</span></a>
+  <a href="#servers"><span class="ico">▣</span><span>Servers</span></a>
+  <a href="#domains"><span class="ico">◎</span><span>Domains</span></a>
+ </nav>
+ <div class="group">SERVICES</div>
+ <nav class="nav">
+  <a href="#databases"><span class="ico">▤</span><span>Databases</span></a>
+  <a href="#runtimes"><span class="ico">⌘</span><span>Runtimes</span></a>
+  <a href="#security"><span class="ico">◇</span><span>SSL / Security</span></a>
+  <a href="#email"><span class="ico">✉</span><span>Email</span></a>
+ </nav>
+ <div class="group">MONITORING</div>
+ <nav class="nav">
+  <a href="#analytics"><span class="ico">⌁</span><span>Analytics</span></a>
+  <a href="#logs"><span class="ico">≡</span><span>Logs</span></a>
+  <a href="#cron"><span class="ico">◷</span><span>Cron Jobs</span></a>
+ </nav>
+ <div class="group">SYSTEM</div>
+ <nav class="nav">
+  <a href="#settings"><span class="ico">⚙</span><span>Settings</span></a>
+ </nav>
+ <div class="sidebar-bottom"><strong>● SYSTEM MONITORING</strong><p>Real-time server metrics enabled</p></div>
+</aside>
+
+<main class="main" id="dashboard">
+ <header class="topbar">
+  <input class="search" placeholder="⌕  Search services..." aria-label="Search services">
+  <div class="topright"><span id="clock">--:--</span><span>◉</span><span class="admin">A &nbsp; admin</span></div>
+ </header>
+
+ <section class="heading">
+  <div><h1>Dashboard</h1><div class="subtitle"><span id="hostname">Loading server...</span> &nbsp;•&nbsp; <span id="os">Linux</span> &nbsp;•&nbsp; <span class="online">● online</span></div></div>
+  <button class="refresh" onclick="refreshAll()">↻ &nbsp; Refresh</button>
+ </section>
+
+ <section class="metrics">
+  <div class="panel metric" style="--accent:var(--cyan)">
+   <div class="metric-label">CPU USAGE <span class="metric-icon">◉</span></div>
+   <div class="metric-value" id="cpu">--%</div><div class="track"><span id="cpu-bar"></span></div>
+   <div class="metric-foot" id="cores">CPU cores: --</div>
+  </div>
+  <div class="panel metric" style="--accent:var(--purple)">
+   <div class="metric-label">MEMORY <span class="metric-icon">▣</span></div>
+   <div class="metric-value" id="ram">-- <small>GB</small></div><div class="track"><span id="ram-bar"></span></div>
+   <div class="metric-foot" id="ram-foot">--</div>
+  </div>
+  <div class="panel metric" style="--accent:var(--orange)">
+   <div class="metric-label">DISK STORAGE <span class="metric-icon">▤</span></div>
+   <div class="metric-value" id="disk">-- <small>GB free</small></div><div class="track"><span id="disk-bar"></span></div>
+   <div class="metric-foot" id="disk-foot">--</div>
+  </div>
+  <div class="panel metric" style="--accent:var(--green)">
+   <div class="metric-label">NETWORK I/O <span class="metric-icon">⌁</span></div>
+   <div class="metric-value" id="network">--</div><div class="track"><span id="network-bar" style="width:8%"></span></div>
+   <div class="metric-foot" id="network-foot">Received / sent totals</div>
+  </div>
+ </section>
+
+ <section class="middle">
+  <div class="panel">
+   <div class="panel-head"><h2>Server Performance</h2><span>LIVE · 3 SECOND INTERVAL</span></div>
+   <div class="chart-wrap"><canvas id="performance"></canvas></div>
+   <div class="legend"><span><i class="dot" style="background:var(--cyan)"></i>CPU usage</span><span><i class="dot" style="background:var(--purple)"></i>RAM usage</span></div>
+  </div>
+  <div class="panel">
+   <div class="panel-head"><h2>System Overview</h2><span>LIVE STATUS</span></div>
+   <div class="health-number" id="health">--</div>
+   <div class="health-note">Server uptime</div>
+   <div style="height:1px;background:var(--line);margin:18px 0"></div>
+   <div class="info-list">
+    <div class="info-item"><small>Operating system</small><strong id="os-detail">--</strong></div>
+    <div class="info-item"><small>Architecture</small><strong id="arch">--</strong></div>
+    <div class="info-item"><small>Python</small><strong id="python">--</strong></div>
+    <div class="info-item"><small>CPU cores</small><strong id="core-detail">--</strong></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="runtimes" style="margin-top:22px">
+  <div class="panel-head"><h2>Runtime & Services</h2><span>INSTALLED SOFTWARE CHECK</span></div>
+  <div class="service-grid" id="services">
+   <div class="service"><div class="service-name">Checking services...</div></div>
+  </div>
+ </section>
+
+ <section class="bottom-grid">
+  <div class="panel" id="servers">
+   <div class="panel-head"><h2>Server Information</h2><span>HOST DETAILS</span></div>
+   <div class="info-list">
+    <div class="info-item"><small>Hostname</small><strong id="host-detail">--</strong></div>
+    <div class="info-item"><small>Platform</small><strong id="platform">--</strong></div>
+    <div class="info-item"><small>Disk total</small><strong id="disk-total">--</strong></div>
+    <div class="info-item"><small>Memory total</small><strong id="memory-total">--</strong></div>
+   </div>
+  </div>
+  <div class="panel">
+   <div class="panel-head"><h2>Module Development</h2><span>PROJECT STATUS</span></div>
+   <div class="info-list">
+    <div class="info-item"><small>Monitoring</small><strong style="color:var(--green)">Active</strong></div>
+    <div class="info-item"><small>Hosting</small><strong style="color:var(--orange)">In development</strong></div>
+    <div class="info-item"><small>VPS Manager</small><strong style="color:var(--orange)">In development</strong></div>
+    <div class="info-item"><small>Security</small><strong style="color:var(--orange)">In development</strong></div>
+   </div>
+  </div>
+ </section>
+ <footer class="footer">LEXSUS SERVER CONTROL PANEL · v1.0.0 · Monitoring data from local server</footer>
+</main>
+</div>
+
+<script>
+const cpuHistory=[],ramHistory=[];
+const $=id=>document.getElementById(id);
+function uptime(s){
+ const d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60);
+ return `${d}d ${h}h ${m}m`;
+}
+function drawChart(){
+ const canvas=$('performance'),rect=canvas.getBoundingClientRect();
+ if(!rect.width)return;
+ const ratio=window.devicePixelRatio||1;
+ canvas.width=rect.width*ratio;canvas.height=rect.height*ratio;
+ const c=canvas.getContext('2d');c.scale(ratio,ratio);
+ const w=rect.width,h=rect.height,pad=24;
+ c.strokeStyle='#273044';c.lineWidth=1;
+ for(let i=0;i<5;i++){let y=pad+i*(h-pad*2)/4;c.beginPath();c.moveTo(pad,y);c.lineTo(w-8,y);c.stroke()}
+ function line(data,color){
+  if(data.length<2)return;
+  const points=data.map((v,i)=>[pad+i*(w-pad-12)/59,h-pad-(v/100)*(h-pad*2)]);
+  c.beginPath();points.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));
+  c.strokeStyle=color;c.lineWidth=2;c.stroke();
+  c.lineTo(points.at(-1)[0],h-pad);c.lineTo(points[0][0],h-pad);c.closePath();
+  const g=c.createLinearGradient(0,pad,0,h-pad);g.addColorStop(0,color+'44');g.addColorStop(1,color+'00');c.fillStyle=g;c.fill();
+ }
+ line(cpuHistory,'#35d9ef');line(ramHistory,'#a78bfa');
+}
+async function refreshAll(){
+ try{
+  const [r,s,h]=await Promise.all([
+   fetch('/api/v1/system'),
+   fetch('/api/v1/services'),
+   fetch('/api/v1/metrics/history')
+  ]);
+  if(!r.ok||!s.ok||!h.ok)throw Error('API request failed');
+  const d=await r.json(),services=await s.json(),history=await h.json();
+  $('hostname').textContent=d.hostname;
+  $('host-detail').textContent=d.hostname;
+  $('os').textContent=d.os;
+  $('os-detail').textContent=d.os+' '+d.os_version;
+  $('arch').textContent=d.architecture;
+  $('python').textContent=d.python;
+  $('core-detail').textContent=d.cpu.cores;
+  $('cores').textContent=d.cpu.cores+' CPU cores';
+  $('cpu').textContent=d.cpu.usage_percent.toFixed(1)+'%';
+  $('cpu-bar').style.width=d.cpu.usage_percent+'%';
+  $('ram').innerHTML=d.memory.used_gb+' <small>/ '+d.memory.total_gb+' GB</small>';
+  $('ram-bar').style.width=d.memory.usage_percent+'%';
+  $('ram-foot').textContent=d.memory.usage_percent+'% memory used';
+  $('disk').innerHTML=d.disk.free_gb+' <small>GB free</small>';
+  $('disk-bar').style.width=d.disk.usage_percent+'%';
+  $('disk-foot').textContent=d.disk.usage_percent+'% used · Read '+d.disk_io.read_mbps+' MB/s · Write '+d.disk_io.write_mbps+' MB/s';
+  $('network').innerHTML='↓ '+d.network.rx_mbps+' <small>Mbps</small>';
+  $('network-foot').textContent='Upload: '+d.network.tx_mbps+' Mbps';
+  $('health').textContent=uptime(d.uptime_seconds);
+  $('platform').textContent=d.os+' / '+d.architecture;
+  $('disk-total').textContent=d.disk.total_gb+' GB';
+  $('memory-total').textContent=d.memory.total_gb+' GB';
+  cpuHistory.splice(0,cpuHistory.length,...history.items.map(x=>x.cpu));
+  ramHistory.splice(0,ramHistory.length,...history.items.map(x=>x.ram));
+  drawChart();
+  $('services').innerHTML=Object.entries(services).map(([name,v])=>`
+   <div class="service"><div class="service-top"><span class="service-name">${name}</span>
+   <span class="state ${v.installed?'ok':'off'}">${v.installed?'● Installed':'○ Not installed'}</span></div>
+   <p>${v.installed?v.path:'Software not detected on PATH'}</p></div>`).join('');
+ }catch(e){console.error(e)}
+}
+function clock(){$('clock').textContent=new Date().toLocaleTimeString()}
+clock();setInterval(clock,1000);
+refreshAll();setInterval(refreshAll,3000);
+window.addEventListener('resize',drawChart);
+document.querySelectorAll('.nav a').forEach(a=>a.addEventListener('click',()=>{
+ document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');
+}));
+</script>
+</body>
+</html>

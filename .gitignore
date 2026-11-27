@@ -1,0 +1,11 @@
+.env
+*.log
+*.db
+*.sqlite3
+__pycache__/
+venv/
+node_modules/
+id_rsa*
+*.pem
+backups/
+run/
